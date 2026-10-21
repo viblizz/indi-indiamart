@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Indiglob Data Management</title>
+    <title>Indiamart Data Management</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -17,6 +17,14 @@
         .hover-expand { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease; }
         .hover-expand:hover { transform: scale(3); z-index: 50; position: relative; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
         td { transition: background-color 0.15s ease; }
+
+        /* Sticky Columns classes for cleaner HTML */
+        .sticky-col-1 { position: sticky; left: 0; width: 80px; min-width: 80px; max-width: 80px; }
+        .sticky-col-2 { position: sticky; left: 80px; width: 250px; min-width: 250px; max-width: 250px; }
+        .sticky-col-3 { position: sticky; left: 330px; width: 120px; min-width: 120px; max-width: 120px; }
+        
+        /* Box shadow to indicate sticky scroll separation */
+        .sticky-shadow { box-shadow: 4px 0 6px -2px rgba(0,0,0,0.05); clip-path: inset(0 -10px 0 0); }
     </style>
 
     <script>
@@ -37,14 +45,14 @@
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
-    <header class="bg-white shadow-md border-b border-gray-200 sticky top-0 z-20">
+    <header class="bg-white shadow-md border-b border-gray-200 sticky top-0 z-[40]">
         <div class="max-w-screen-2xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
                 <div class="bg-brandOrange text-white p-2 rounded-lg">
                     <i class="ph-fill ph-globe-hemisphere-west text-2xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold text-brandBlue tracking-tight">Indiglob</h1>
+                    <h1 class="text-xl font-bold text-brandBlue tracking-tight">Indiamart</h1>
                     <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Data Management</p>
                 </div>
             </div>
@@ -80,7 +88,7 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex-grow flex flex-col min-h-[600px]">
             <div class="overflow-x-auto w-full flex-grow no-scrollbar relative">
                 <table class="min-w-full divide-y divide-gray-200 text-sm" id="mainTable">
-                    <thead class="bg-gray-100 sticky top-0 z-10 shadow-sm border-b border-gray-200">
+                    <thead class="bg-gray-100 sticky top-0 z-[30] shadow-sm border-b border-gray-200">
                         <tr id="tableHeaderRow">
                             <!-- Injected by JS -->
                         </tr>
@@ -144,7 +152,9 @@
 
                     <!-- List -->
                     <div class="w-full md:w-2/3 flex flex-col">
-                        <h4 class="text-sm font-bold text-gray-800 mb-3 border-b pb-2">Saved Suppliers</h4>
+                        <div class="flex justify-between items-center mb-3 border-b pb-2">
+                            <h4 class="text-sm font-bold text-gray-800">Saved Suppliers (Column Organizer)</h4>
+                        </div>
                         <div id="supplierListContainer" class="space-y-2 overflow-y-auto pr-2 pb-4 h-full max-h-[400px]">
                             <!-- Injected by JS -->
                         </div>
@@ -197,7 +207,6 @@
                     <button type="button" onclick="window.closeProductModal()" class="px-5 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">
                         Cancel
                     </button>
-                    <!-- CRITICAL FIX: Explicit onclick handler -->
                     <button type="button" onclick="window.saveProduct()" class="px-5 py-2 bg-brandBlue text-white text-sm font-bold rounded-lg hover:bg-brandBlueDark shadow-md">
                         Save Product
                     </button>
@@ -248,7 +257,7 @@
         window.loadData = async function() {
             const status = document.getElementById('syncStatus');
             try {
-                const snapshot = await get(child(ref(db), `indiglobData`));
+                const snapshot = await get(child(ref(db), `indiglobData`)); // Retaining existing DB path
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     window.products = data.products || [];
@@ -280,7 +289,7 @@
             // Un-reverse products before saving to keep sequential order in DB
             const dataToSave = [...window.products].reverse();
             
-            set(ref(db, 'indiglobData'), {
+            set(ref(db, 'indiglobData'), { // Retaining existing DB path
                 products: dataToSave,
                 suppliers: window.suppliers
             }).then(() => {
@@ -337,11 +346,11 @@
             const thead = document.getElementById('tableHeaderRow');
             const tbody = document.getElementById('tableBody');
             
-            // Render Headers
+            // Render Headers - First 3 columns are sticky
             let hHTML = `
-                <th class="px-4 py-3 text-left font-bold text-gray-600 w-16 bg-gray-50 rounded-tl-lg border-b-2 border-gray-200">Image</th>
-                <th class="px-4 py-3 text-left font-bold text-gray-600 min-w-[250px] bg-gray-50 border-b-2 border-gray-200">Product Detail</th>
-                <th class="px-4 py-3 text-left font-bold text-gray-600 w-32 border-r border-gray-200 bg-gray-50 border-b-2 border-gray-200">Crtn Size</th>
+                <th class="sticky-col-1 px-4 py-3 text-left font-bold text-gray-600 bg-gray-50 rounded-tl-lg border-b-2 border-gray-200 z-[35]">Image</th>
+                <th class="sticky-col-2 px-4 py-3 text-left font-bold text-gray-600 bg-gray-50 border-b-2 border-gray-200 z-[35]">Product Detail</th>
+                <th class="sticky-col-3 px-4 py-3 text-left font-bold text-gray-600 border-r border-gray-200 bg-gray-50 border-b-2 border-gray-200 z-[35] sticky-shadow">Crtn Size</th>
             `;
             
             window.suppliers.forEach(sup => {
@@ -367,14 +376,19 @@
                 
                 bHTML += `
                     <tr class="hover:bg-orange-50/30 group border-b border-gray-100 transition-colors">
-                        <td class="px-4 py-3">
+                        <td class="sticky-col-1 px-4 py-3 bg-white group-hover:bg-orange-50/30 z-[25] transition-colors">
                             <img src="${img}" class="h-12 w-12 rounded object-cover border border-gray-200 hover-expand cursor-pointer bg-white shadow-sm">
                         </td>
-                        <td class="px-4 py-3">
+                        <td class="sticky-col-2 px-4 py-3 bg-white group-hover:bg-orange-50/30 z-[25] transition-colors">
                             <div class="font-bold text-brandBlue cursor-pointer hover:text-brandOrange transition-colors text-[15px]" onclick="window.editProduct('${prod.id}')">${window.escapeHtml(prod.name)}</div>
                             <div class="text-[11px] text-gray-500 font-medium mt-0.5">${prod.images?.length || 0}/5 images</div>
                         </td>
-                        <td class="px-4 py-3 font-semibold text-gray-700 border-r border-gray-100">${window.escapeHtml(prod.crtnSize)}</td>
+                        <td class="sticky-col-3 px-4 py-3 font-semibold text-gray-700 border-r border-gray-100 bg-white group-hover:bg-orange-50/30 z-[25] sticky-shadow transition-colors cursor-pointer hover:bg-gray-50/50"
+                            onclick="window.startInlineEditCrtn(event, '${prod.id}', '${window.escapeHtml(prod.crtnSize)}')">
+                            <div id="crtn-cell-${prod.id}" class="min-h-[36px] flex items-center truncate">
+                                ${window.escapeHtml(prod.crtnSize)}
+                            </div>
+                        </td>
                 `;
 
                 window.suppliers.forEach(sup => {
@@ -394,7 +408,7 @@
                 });
 
                 bHTML += `
-                        <td class="px-4 py-3 text-center">
+                        <td class="px-4 py-3 text-center bg-white group-hover:bg-orange-50/30 transition-colors">
                             <button onclick="window.deleteProduct('${prod.id}')" class="text-gray-400 hover:text-red-500 transition-colors">
                                 <i class="ph-fill ph-trash text-xl"></i>
                             </button>
@@ -416,11 +430,44 @@
             window.renderTable();
         };
 
+        // Inline Edit Crtn Size
+        window.startInlineEditCrtn = function(e, prodId, currentVal) {
+            const td = e.currentTarget;
+            const contentDiv = document.getElementById(`crtn-cell-${prodId}`);
+            
+            if(contentDiv.querySelector('input')) return;
+            
+            contentDiv.innerHTML = `
+                <input type="text" value="${currentVal}" 
+                       class="w-full px-1 py-0.5 text-sm border-2 border-brandBlue rounded outline-none font-bold text-gray-900 bg-white"
+                       onblur="window.saveInlineEditCrtn(this, '${prodId}')"
+                       onkeydown="if(event.key==='Enter') this.blur(); if(event.key==='Escape') window.renderTable();">
+            `;
+            const input = contentDiv.querySelector('input');
+            input.focus();
+            input.select();
+        };
+
+        window.saveInlineEditCrtn = function(inputEl, prodId) {
+            const val = inputEl.value.trim();
+            const pIdx = window.products.findIndex(p => p.id === prodId);
+            
+            if (pIdx > -1 && val) {
+                window.products[pIdx].crtnSize = val;
+                
+                const fIdx = window.filteredProducts.findIndex(p => p.id === prodId);
+                if(fIdx > -1) window.filteredProducts[fIdx] = window.products[pIdx];
+                
+                window.saveData();
+            }
+            window.renderTable();
+        };
+
+        // Inline Edit Rates
         window.startInlineEdit = function(e, prodId, supId, currentVal) {
             const td = e.currentTarget;
             const contentDiv = document.getElementById(`cell-${prodId}-${supId}`);
             
-            // Prevent double click creating nested inputs
             if(contentDiv.querySelector('input')) return;
             
             contentDiv.innerHTML = `
@@ -452,7 +499,6 @@
                     delete window.products[pIdx].supplierRates[supId];
                 }
                 
-                // Sync filter array
                 const fIdx = window.filteredProducts.findIndex(p => p.id === prodId);
                 if(fIdx > -1) window.filteredProducts[fIdx] = window.products[pIdx];
                 
@@ -461,7 +507,7 @@
             window.renderTable();
         };
 
-        // --- STREAMING_CHUNK: Product Modal Logic (CRITICAL FIXES) ---
+        // --- STREAMING_CHUNK: Product Modal Logic ---
         window.openProductModal = function() {
             document.getElementById('editingProductId').value = '';
             document.getElementById('prodName').value = '';
@@ -475,7 +521,6 @@
             document.getElementById('productModal').classList.add('hidden');
         };
 
-        // CRITICAL FIX: Explicit global save function pulling from DOM directly
         window.saveProduct = function() {
             const name = document.getElementById('prodName').value.trim();
             const size = document.getElementById('prodSize').value.trim();
@@ -486,7 +531,6 @@
                 return;
             }
 
-            // Extract images
             const images = [];
             for (let i = 1; i <= 5; i++) {
                 const imgInput = document.getElementById(`prodImg${i}`);
@@ -516,7 +560,7 @@
                 });
             }
 
-            window.handleSearch(); // Updates filtered array and re-renders
+            window.handleSearch(); 
             window.saveData();
             window.closeProductModal();
         };
@@ -542,7 +586,6 @@
             });
         };
 
-        // Downscale image to prevent DB bloating
         window.previewImage = function(input, previewId) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -550,7 +593,7 @@
                     const img = new Image();
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
-                        const MAX = 600; // max width/height to save DB space
+                        const MAX = 600; 
                         let w = img.width, h = img.height;
                         if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } } 
                         else { if (h > MAX) { w *= MAX / h; h = MAX; } }
@@ -558,7 +601,6 @@
                         canvas.width = w; canvas.height = h;
                         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
                         
-                        // compress to jpeg
                         const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
                         
                         const pDiv = document.getElementById(previewId);
@@ -678,6 +720,28 @@
             });
         };
 
+        // Supplier Column Organizer Logic
+        window.moveSupplier = function(id, dir) {
+            const idx = window.suppliers.findIndex(s => s.id === id);
+            if (idx < 0) return;
+            
+            if (dir === -1 && idx > 0) {
+                const temp = window.suppliers[idx];
+                window.suppliers[idx] = window.suppliers[idx - 1];
+                window.suppliers[idx - 1] = temp;
+            } else if (dir === 1 && idx < window.suppliers.length - 1) {
+                const temp = window.suppliers[idx];
+                window.suppliers[idx] = window.suppliers[idx + 1];
+                window.suppliers[idx + 1] = temp;
+            } else {
+                return; 
+            }
+            
+            window.saveData();
+            window.renderSupplierList();
+            window.renderTable();
+        };
+
         window.renderSupplierList = function() {
             const c = document.getElementById('supplierListContainer');
             if (window.suppliers.length === 0) {
@@ -686,16 +750,32 @@
             }
             
             let html = '';
-            window.suppliers.forEach(s => {
+            window.suppliers.forEach((s, index) => {
+                const isFirst = index === 0;
+                const isLast = index === window.suppliers.length - 1;
+                
                 html += `
-                    <div class="border border-gray-200 rounded-lg p-3 hover:border-brandOrange hover:bg-orange-50/20 transition-colors flex justify-between items-center group">
-                        <div class="overflow-hidden">
+                    <div class="border border-gray-200 rounded-lg p-3 hover:border-brandOrange hover:bg-orange-50/20 transition-colors flex justify-between items-center group bg-white">
+                        <div class="overflow-hidden flex-grow">
                             <div class="font-bold text-gray-800 text-sm truncate">${window.escapeHtml(s.companyName)}</div>
                             <div class="text-xs text-gray-500 font-medium">${window.escapeHtml(s.name)} ${s.nickName ? `• <span class="text-brandBlue">${window.escapeHtml(s.nickName)}</span>` : ''}</div>
                         </div>
-                        <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onclick="window.editSupplier('${s.id}')" class="p-1.5 text-blue-500 hover:bg-blue-100 rounded"><i class="ph-fill ph-pencil-simple text-lg"></i></button>
-                            <button onclick="window.deleteSupplier('${s.id}')" class="p-1.5 text-red-500 hover:bg-red-100 rounded"><i class="ph-fill ph-trash text-lg"></i></button>
+                        
+                        <div class="flex items-center gap-2">
+                            <!-- Organizer Buttons -->
+                            <div class="flex flex-col gap-0 border-r border-gray-200 pr-2 mr-1">
+                                <button onclick="window.moveSupplier('${s.id}', -1)" class="p-0.5 text-gray-400 hover:text-brandBlue disabled:opacity-30 disabled:hover:text-gray-400" ${isFirst ? 'disabled' : ''} title="Move Column Left">
+                                    <i class="ph-bold ph-caret-up text-sm"></i>
+                                </button>
+                                <button onclick="window.moveSupplier('${s.id}', 1)" class="p-0.5 text-gray-400 hover:text-brandBlue disabled:opacity-30 disabled:hover:text-gray-400" ${isLast ? 'disabled' : ''} title="Move Column Right">
+                                    <i class="ph-bold ph-caret-down text-sm"></i>
+                                </button>
+                            </div>
+
+                            <div class="flex gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="window.editSupplier('${s.id}')" class="p-1.5 text-blue-500 hover:bg-blue-100 rounded" title="Edit"><i class="ph-fill ph-pencil-simple text-lg"></i></button>
+                                <button onclick="window.deleteSupplier('${s.id}')" class="p-1.5 text-red-500 hover:bg-red-100 rounded" title="Delete"><i class="ph-fill ph-trash text-lg"></i></button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -728,7 +808,7 @@
 
             const link = document.createElement("a");
             link.setAttribute("href", encodeURI("data:text/csv;charset=utf-8," + csv));
-            link.setAttribute("download", `Indiglob_Export_${new Date().toISOString().split('T')[0]}.csv`);
+            link.setAttribute("download", `Indiamart_Export_${new Date().toISOString().split('T')[0]}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
