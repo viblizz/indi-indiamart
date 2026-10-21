@@ -10,59 +10,36 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
     <style>
-        :root {
-            --col1-width: 80px;
-            --col2-width: 250px;
-            --col3-width: 120px;
-        }
-
-        body { font-family: 'Inter', sans-serif; overflow: hidden; } /* Prevent whole page scroll, control inside table */
+        body { font-family: 'Inter', sans-serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .hover-expand { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease; }
-        .hover-expand:hover { transform: scale(3); z-index: 50; position: relative; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
         td { transition: background-color 0.15s ease; }
-
-        /* Custom Scrollbar for the table container */
-        .table-container::-webkit-scrollbar { width: 8px; height: 8px; }
-        .table-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-        .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .table-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        /* Sticky Columns - Body */
-        .sticky-col-1 { position: sticky; left: 0; width: var(--col1-width); min-width: var(--col1-width); max-width: var(--col1-width); z-index: 25; }
-        .sticky-col-2 { position: sticky; left: var(--col1-width); width: var(--col2-width); min-width: var(--col2-width); max-width: var(--col2-width); z-index: 25; }
-        .sticky-col-3 { position: sticky; left: calc(var(--col1-width) + var(--col2-width)); width: var(--col3-width); min-width: var(--col3-width); max-width: var(--col3-width); z-index: 25; }
         
-        /* Sticky Columns - Header (Higher Z-index to float above body) */
-        .sticky-head-col-1 { position: sticky; top: 0; left: 0; width: var(--col1-width); min-width: var(--col1-width); max-width: var(--col1-width); z-index: 45; }
-        .sticky-head-col-2 { position: sticky; top: 0; left: var(--col1-width); width: var(--col2-width); min-width: var(--col2-width); max-width: var(--col2-width); z-index: 45; }
-        .sticky-head-col-3 { position: sticky; top: 0; left: calc(var(--col1-width) + var(--col2-width)); width: var(--col3-width); min-width: var(--col3-width); max-width: var(--col3-width); z-index: 45; }
-        
-        /* Regular Headers - Sticky Top */
-        .sticky-head-other { position: sticky; top: 0; z-index: 35; }
-        
-        /* Shadow markers */
-        .sticky-shadow { box-shadow: 4px 0 6px -2px rgba(0,0,0,0.05); }
-        .sticky-head-shadow { box-shadow: 4px 4px 6px -2px rgba(0,0,0,0.05); }
-
-        /* Column Resizer Handle */
-        th { position: relative; }
+        /* Column Resizer styling */
         .resizer {
             position: absolute;
-            top: 0;
             right: 0;
-            width: 5px;
-            height: 100%;
+            top: 0;
+            bottom: 0;
+            width: 8px;
             cursor: col-resize;
             user-select: none;
-            background-color: transparent;
-            z-index: 50;
-            transition: background-color 0.2s;
+            touch-action: none;
+            z-index: 10;
         }
-        .resizer:hover, .resizer.active {
-            background-color: #f97316; /* brandOrange indicator */
+        .resizer:hover, .resizer:active {
+            background-color: rgba(0, 82, 204, 0.3); /* brandBlue semi-transparent */
+        }
+        
+        /* Desktop Sticky Columns (Disabled on mobile < 768px via JS) */
+        .sticky-col {
+            position: sticky;
+            z-index: 10;
+            background-color: inherit;
+        }
+        .sticky-col-header {
+            z-index: 30 !important;
         }
     </style>
 
@@ -82,12 +59,12 @@
         }
     </script>
 </head>
-<body class="bg-gray-50 text-gray-800 h-screen flex flex-col">
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
-    <header class="bg-white shadow-md border-b border-gray-200 flex-shrink-0 relative z-[60]">
-        <div class="max-w-screen-2xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-4">
+    <header class="bg-white shadow-md border-b border-gray-200 sticky top-0 z-[40]">
+        <div class="max-w-screen-2xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
-                <div class="bg-brandOrange text-white p-2 rounded-lg shadow-sm">
+                <div class="bg-brandOrange text-white p-2 rounded-lg">
                     <i class="ph-fill ph-globe-hemisphere-west text-2xl"></i>
                 </div>
                 <div>
@@ -97,13 +74,13 @@
             </div>
             
             <div class="flex flex-wrap items-center justify-center gap-2 w-full sm:w-auto">
-                <button onclick="window.openReorderModal()" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-lg font-medium transition-colors shadow-sm text-sm whitespace-nowrap">
+                <button onclick="window.openReorderModal()" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 rounded-lg font-medium transition-colors shadow-sm text-sm whitespace-nowrap">
                     <i class="ph ph-arrows-left-right"></i> Reorder Columns
                 </button>
-                <button onclick="window.openSupplierManager()" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-white text-brandBlue hover:bg-blue-50 border border-brandBlue rounded-lg font-medium transition-colors shadow-sm text-sm whitespace-nowrap">
+                <button onclick="window.openSupplierManager()" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white text-brandBlue hover:bg-blue-50 border border-brandBlue rounded-lg font-medium transition-colors shadow-sm text-sm whitespace-nowrap">
                     <i class="ph ph-users"></i> Manage Suppliers
                 </button>
-                <button onclick="window.exportToCSV()" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-white text-brandOrange hover:bg-orange-50 border border-brandOrange rounded-lg font-medium transition-colors shadow-sm text-sm whitespace-nowrap">
+                <button onclick="window.exportToCSV()" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white text-brandOrange hover:bg-orange-50 border border-brandOrange rounded-lg font-medium transition-colors shadow-sm text-sm whitespace-nowrap">
                     <i class="ph ph-file-csv"></i> Export Data
                 </button>
                 <button onclick="window.openProductModal()" class="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2 bg-brandBlue text-white hover:bg-brandBlueDark rounded-lg font-medium transition-colors shadow-md text-sm whitespace-nowrap">
@@ -113,25 +90,24 @@
         </div>
     </header>
 
-    <main class="flex-grow flex flex-col max-w-screen-2xl mx-auto px-4 py-4 w-full gap-4 relative z-10 overflow-hidden">
+    <main class="flex-grow max-w-screen-2xl mx-auto px-4 py-6 w-full flex flex-col gap-5 relative z-10">
         
-        <div class="flex-shrink-0 flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-3 rounded-xl shadow-sm border border-gray-200">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-3 rounded-xl shadow-sm border border-gray-200">
             <div class="relative w-full md:w-1/2">
                 <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"></i>
                 <input type="text" id="searchInput" placeholder="Search by multiple keywords (e.g., '50 cob')..." 
                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brandOrange focus:border-brandOrange outline-none transition-shadow text-sm"
                        oninput="window.handleSearch()">
             </div>
-            <div class="text-sm text-brandBlue font-semibold px-3 bg-blue-50 py-1.5 rounded-lg border border-blue-100 flex items-center shadow-inner" id="syncStatus">
-                <i class="ph ph-arrows-clockwise animate-spin mr-2 text-lg"></i> Syncing with Firebase...
+            <div class="text-sm text-brandBlue font-semibold px-2 bg-blue-50 py-1.5 rounded-lg border border-blue-100" id="syncStatus">
+                <i class="ph ph-arrows-clockwise animate-spin inline-block mr-1"></i> Syncing with Firebase...
             </div>
         </div>
 
-        <!-- The Table Container with specific scroll rules -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex-grow flex flex-col relative">
-            <div class="overflow-auto table-container w-full h-full relative" id="tableWrapper">
-                <table class="min-w-full divide-y divide-gray-200 text-sm border-collapse" id="mainTable">
-                    <thead class="bg-gray-100 shadow-sm">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex-grow flex flex-col min-h-[600px]">
+            <div class="overflow-x-auto w-full flex-grow no-scrollbar relative" id="tableContainer">
+                <table class="min-w-full divide-y divide-gray-200 text-sm table-fixed" id="mainTable">
+                    <thead class="bg-gray-100 sticky top-0 z-20 shadow-sm border-b border-gray-200">
                         <tr id="tableHeaderRow">
                             <!-- Injected by JS -->
                         </tr>
@@ -144,43 +120,37 @@
         </div>
     </main>
 
-    <!-- Lightbox Modal -->
-    <div id="lightboxModal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-gray-900/90 backdrop-blur-sm transition-opacity cursor-zoom-out" onclick="window.closeLightbox()"></div>
-        <div class="relative z-10 max-w-4xl max-h-[90vh] flex flex-col items-center">
-            <button onclick="window.closeLightbox()" class="absolute -top-10 right-0 text-white hover:text-brandOrange transition-colors">
-                <i class="ph-bold ph-x text-3xl"></i>
-            </button>
-            <img id="lightboxImg" src="" alt="Preview" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl border-4 border-white/10">
-        </div>
-    </div>
-
-    <!-- Reorder Suppliers Modal -->
+    <!-- Supplier Reorder Modal -->
     <div id="reorderModal" class="fixed inset-0 z-[60] hidden overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
             <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="window.closeReorderModal()"></div>
             <div class="relative bg-white rounded-xl text-left shadow-2xl transform transition-all sm:my-8 sm:max-w-md w-full flex flex-col">
                 <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-xl">
                     <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                        <i class="ph-fill ph-arrows-left-right text-brandOrange text-xl"></i> Reorder Supplier Columns
+                        <i class="ph-fill ph-arrows-left-right text-brandBlue text-xl"></i> Reorder Party Columns
                     </h3>
                     <button onclick="window.closeReorderModal()" class="text-gray-400 hover:text-gray-800">
                         <i class="ph ph-x text-xl"></i>
                     </button>
                 </div>
-                <div class="p-6 bg-white overflow-y-auto max-h-[60vh]">
-                    <p class="text-sm text-gray-600 mb-4">Click the arrows to change the order of suppliers in the table view.</p>
+                <div class="p-6 bg-white max-h-[60vh] overflow-y-auto">
+                    <p class="text-xs text-gray-500 mb-4">Use the arrows to change the order of the suppliers in the table.</p>
                     <div id="reorderListContainer" class="space-y-2">
                         <!-- Injected by JS -->
                     </div>
                 </div>
                 <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3 rounded-b-xl border-t border-gray-200">
-                    <button type="button" onclick="window.closeReorderModal()" class="px-5 py-2 bg-brandBlue text-white text-sm font-bold rounded-lg hover:bg-brandBlueDark shadow-md">
-                        Done
-                    </button>
+                    <button type="button" onclick="window.closeReorderModal()" class="px-5 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">Cancel</button>
+                    <button type="button" onclick="window.saveReorder()" class="px-5 py-2 bg-brandBlue text-white text-sm font-bold rounded-lg hover:bg-brandBlueDark shadow-md">Apply Order</button>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Lightbox Modal -->
+    <div id="lightboxModal" class="fixed inset-0 z-[70] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm" onclick="window.closeLightbox()">
+        <button class="absolute top-4 right-4 text-white hover:text-gray-300 text-3xl"><i class="ph ph-x"></i></button>
+        <img id="lightboxImg" src="" class="max-w-[90%] max-h-[90vh] object-contain rounded-lg shadow-2xl" onclick="event.stopPropagation()">
     </div>
 
     <!-- Manage Suppliers Modal -->
@@ -224,7 +194,7 @@
                                 <label class="text-xs font-semibold text-gray-600">Address</label>
                                 <textarea id="supAddress" rows="2" class="w-full border border-gray-300 rounded py-1.5 px-3 text-sm focus:ring-1 focus:ring-brandOrange outline-none"></textarea>
                             </div>
-                            <button type="button" onclick="window.saveSupplier()" class="w-full bg-brandOrange text-white rounded py-2 text-sm font-semibold hover:bg-brandOrangeDark transition mt-2 shadow-sm">
+                            <button type="button" onclick="window.saveSupplier()" class="w-full bg-brandOrange text-white rounded py-2 text-sm font-semibold hover:bg-brandOrangeDark transition mt-2">
                                 Save Supplier
                             </button>
                             <button type="button" onclick="window.resetSupplierForm()" class="w-full bg-white border border-gray-300 text-gray-700 rounded py-1.5 text-xs font-medium hover:bg-gray-50 transition mt-1">
@@ -235,9 +205,7 @@
 
                     <!-- List -->
                     <div class="w-full md:w-2/3 flex flex-col">
-                        <div class="flex justify-between items-center mb-3 border-b pb-2">
-                            <h4 class="text-sm font-bold text-gray-800">Saved Suppliers</h4>
-                        </div>
+                        <h4 class="text-sm font-bold text-gray-800 mb-3 border-b pb-2">Saved Suppliers</h4>
                         <div id="supplierListContainer" class="space-y-2 overflow-y-auto pr-2 pb-4 h-full max-h-[400px]">
                             <!-- Injected by JS -->
                         </div>
@@ -318,7 +286,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        // Required Config
         const firebaseConfig = {
             apiKey: "AIzaSyDdJyENlXcr0LG8hKwbAkG3y8eRe0TXP4E",
             authDomain: "indiglob-indiamart.firebaseapp.com",
@@ -332,70 +299,16 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Global State Binding
         window.products = [];
         window.suppliers = [];
         window.filteredProducts = [];
         window.currentConfirmAction = null;
-        window.colWidths = {}; // Store custom widths for supplier columns
 
-        // --- Column Resizing Logic ---
-        window.resizeState = { isResizing: false, startX: 0, startW: 0, colId: null, th: null };
-
-        window.initResize = function(e, th, colId) {
-            window.resizeState.isResizing = true;
-            window.resizeState.startX = e.clientX;
-            window.resizeState.startW = th.offsetWidth;
-            window.resizeState.colId = colId;
-            window.resizeState.th = th;
-            e.target.classList.add('active');
-            
-            document.addEventListener('mousemove', window.onMouseMove);
-            document.addEventListener('mouseup', window.onMouseUp);
-            e.stopPropagation();
-            e.preventDefault();
-        };
-
-        window.onMouseMove = function(e) {
-            if (!window.resizeState.isResizing) return;
-            const newW = Math.max(60, window.resizeState.startW + (e.clientX - window.resizeState.startX));
-            const colId = window.resizeState.colId;
-            
-            if (['1', '2', '3'].includes(colId)) {
-                // Update frozen column CSS variables
-                document.documentElement.style.setProperty(`--col${colId}-width`, `${newW}px`);
-            } else {
-                // Update normal column inline styles
-                const th = window.resizeState.th;
-                th.style.width = `${newW}px`;
-                th.style.minWidth = `${newW}px`;
-                th.style.maxWidth = `${newW}px`;
-            }
-        };
-
-        window.onMouseUp = function(e) {
-            if (!window.resizeState.isResizing) return;
-            window.resizeState.isResizing = false;
-            
-            const colId = window.resizeState.colId;
-            if (!['1', '2', '3'].includes(colId)) {
-                // Save width state and re-render body to ensure tds match ths
-                window.colWidths[colId] = parseInt(window.resizeState.th.style.width);
-                window.renderTable(); 
-            }
-            
-            document.removeEventListener('mousemove', window.onMouseMove);
-            document.removeEventListener('mouseup', window.onMouseUp);
-            
-            const resizers = document.querySelectorAll('.resizer');
-            resizers.forEach(r => r.classList.remove('active'));
-        };
-
-        // --- Core Data Sync ---
+        // Note: DB Node kept as 'indiglobData' to preserve existing data
         window.loadData = async function() {
             const status = document.getElementById('syncStatus');
             try {
-                const snapshot = await get(child(ref(db), `indiglobData`)); 
+                const snapshot = await get(child(ref(db), `indiglobData`));
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     window.products = data.products || [];
@@ -404,64 +317,59 @@
                     window.products = [];
                     window.suppliers = [];
                 }
-                
                 window.products.reverse(); 
                 window.filteredProducts = [...window.products];
                 window.renderTable();
                 
-                status.innerHTML = `<i class="ph-fill ph-check-circle text-green-500 mr-2 text-lg"></i> <span class="text-green-700">Data synced</span>`;
-                status.className = "text-sm font-semibold px-3 bg-green-50 py-1.5 rounded-lg border border-green-200 flex items-center shadow-inner";
+                status.innerHTML = `<i class="ph-fill ph-check-circle text-green-500 inline-block mr-1"></i> Data synced`;
+                status.className = "text-sm text-green-700 font-semibold px-2 bg-green-50 py-1.5 rounded-lg border border-green-100";
             } catch (error) {
                 console.error("DB Error:", error);
-                status.innerHTML = `<i class="ph-fill ph-warning-circle text-red-500 mr-2 text-lg"></i> <span class="text-red-700">Sync failed</span>`;
-                status.className = "text-sm font-semibold px-3 bg-red-50 py-1.5 rounded-lg border border-red-200 flex items-center shadow-inner";
+                status.innerHTML = `<i class="ph-fill ph-warning-circle text-red-500 inline-block mr-1"></i> Sync failed`;
                 window.showAlert("Error", "Could not connect to Firebase database.", "error");
             }
         };
 
         window.saveData = function() {
             const status = document.getElementById('syncStatus');
-            status.innerHTML = `<i class="ph ph-spinner animate-spin mr-2 text-lg text-brandBlue"></i> <span class="text-brandBlue">Saving...</span>`;
-            status.className = "text-sm font-semibold px-3 bg-blue-50 py-1.5 rounded-lg border border-blue-200 flex items-center shadow-inner";
-            
+            status.innerHTML = `<i class="ph ph-spinner animate-spin inline-block mr-1"></i> Saving...`;
             const dataToSave = [...window.products].reverse();
             
-            set(ref(db, 'indiglobData'), { 
+            set(ref(db, 'indiglobData'), {
                 products: dataToSave,
                 suppliers: window.suppliers
             }).then(() => {
-                status.innerHTML = `<i class="ph-fill ph-check-circle text-green-500 mr-2 text-lg"></i> <span class="text-green-700">Saved successfully</span>`;
-                status.className = "text-sm font-semibold px-3 bg-green-50 py-1.5 rounded-lg border border-green-200 flex items-center shadow-inner";
+                status.innerHTML = `<i class="ph-fill ph-check-circle text-green-500 inline-block mr-1"></i> Saved successfully`;
+                setTimeout(() => {
+                    status.innerHTML = `<i class="ph-fill ph-cloud-check text-brandBlue inline-block mr-1"></i> Cloud Synced`;
+                }, 2000);
             }).catch(error => {
-                console.error("Save Error:", error);
                 window.showAlert("Error", "Failed to save data. Check connection.", "error");
             });
         };
 
-        // --- Alert System ---
         window.showAlert = function(title, message, type = 'info', callback = null) {
             document.getElementById('alertTitle').innerText = title;
             document.getElementById('alertMessage').innerText = message;
-            
             const icon = document.getElementById('alertIcon');
             const actions = document.getElementById('alertActions');
 
             if (type === 'error') {
                 icon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4 bg-red-100 text-red-600 text-2xl';
                 icon.innerHTML = '<i class="ph-fill ph-warning"></i>';
-                actions.innerHTML = `<button onclick="window.closeAlert()" class="px-5 py-2 bg-red-600 text-white rounded-lg font-bold shadow-md">Close</button>`;
+                actions.innerHTML = `<button onclick="window.closeAlert()" class="px-5 py-2 bg-red-600 text-white rounded-lg font-bold">Close</button>`;
             } else if (type === 'confirm') {
                 icon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4 bg-orange-100 text-brandOrange text-2xl';
                 icon.innerHTML = '<i class="ph-fill ph-question"></i>';
                 window.currentConfirmAction = callback;
                 actions.innerHTML = `
-                    <button onclick="window.closeAlert()" class="px-5 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg font-medium hover:bg-gray-50">Cancel</button>
-                    <button onclick="window.executeConfirm()" class="px-5 py-2 bg-brandOrange hover:bg-brandOrangeDark text-white rounded-lg font-bold shadow-md">Confirm</button>
+                    <button onclick="window.closeAlert()" class="px-5 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg font-medium">Cancel</button>
+                    <button onclick="window.executeConfirm()" class="px-5 py-2 bg-brandOrange text-white rounded-lg font-bold">Confirm</button>
                 `;
             } else {
                 icon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4 bg-blue-100 text-brandBlue text-2xl';
                 icon.innerHTML = '<i class="ph-fill ph-info"></i>';
-                actions.innerHTML = `<button onclick="window.closeAlert()" class="px-5 py-2 bg-brandBlue hover:bg-brandBlueDark text-white rounded-lg font-bold shadow-md">OK</button>`;
+                actions.innerHTML = `<button onclick="window.closeAlert()" class="px-5 py-2 bg-brandBlue text-white rounded-lg font-bold">OK</button>`;
             }
             document.getElementById('customAlert').classList.remove('hidden');
         };
@@ -476,10 +384,81 @@
             window.closeAlert();
         };
 
-        // --- Lightbox ---
-        window.openLightbox = function(src) {
-            if(!src || src.includes('placehold.co')) return;
-            document.getElementById('lightboxImg').src = src;
+        // Resizing Logic
+        let isResizing = false;
+        let currentTh = null;
+        let startX = 0;
+        let startWidth = 0;
+
+        window.initResize = function(e, th) {
+            isResizing = true;
+            currentTh = th;
+            startX = e.pageX || (e.touches && e.touches[0].pageX);
+            startWidth = currentTh.offsetWidth;
+            
+            document.addEventListener('mousemove', window.doResize);
+            document.addEventListener('mouseup', window.stopResize);
+            document.addEventListener('touchmove', window.doResize, {passive: false});
+            document.addEventListener('touchend', window.stopResize);
+            e.stopPropagation();
+        };
+
+        window.doResize = function(e) {
+            if (!isResizing) return;
+            const currentX = e.pageX || (e.touches && e.touches[0].pageX);
+            const diff = currentX - startX;
+            currentTh.style.width = (startWidth + diff) + 'px';
+            currentTh.style.minWidth = (startWidth + diff) + 'px';
+            window.updateStickyPositions();
+        };
+
+        window.stopResize = function() {
+            isResizing = false;
+            document.removeEventListener('mousemove', window.doResize);
+            document.removeEventListener('mouseup', window.stopResize);
+            document.removeEventListener('touchmove', window.doResize);
+            document.removeEventListener('touchend', window.stopResize);
+        };
+
+        window.updateStickyPositions = function() {
+            // Only apply sticky positions if screen is >= 768px (md)
+            const isDesktop = window.innerWidth >= 768;
+            const table = document.getElementById('mainTable');
+            if(!table) return;
+
+            const rows = table.querySelectorAll('tr');
+            rows.forEach((row, rowIndex) => {
+                const cells = row.children;
+                if(cells.length >= 3) {
+                    if (isDesktop) {
+                        let leftPos = 0;
+                        for(let i=0; i<3; i++) {
+                            cells[i].classList.add('sticky-col');
+                            if(rowIndex === 0) cells[i].classList.add('sticky-col-header');
+                            cells[i].style.left = leftPos + 'px';
+                            leftPos += cells[i].offsetWidth;
+                            // Add bg-white to body cells, bg-gray-50 to header cells to prevent transparent overlap
+                            cells[i].classList.add(rowIndex === 0 ? 'bg-gray-50' : 'bg-white');
+                        }
+                    } else {
+                        // Mobile: Remove sticky behaviors
+                        for(let i=0; i<3; i++) {
+                            cells[i].classList.remove('sticky-col', 'sticky-col-header');
+                            cells[i].style.left = 'auto';
+                        }
+                    }
+                }
+            });
+        };
+
+        window.addEventListener('resize', () => {
+            requestAnimationFrame(window.updateStickyPositions);
+        });
+
+        // Lightbox
+        window.openLightbox = function(imgSrc) {
+            if(imgSrc.includes('No+Img')) return; // Don't open placeholder
+            document.getElementById('lightboxImg').src = imgSrc;
             document.getElementById('lightboxModal').classList.remove('hidden');
         };
         window.closeLightbox = function() {
@@ -487,67 +466,57 @@
             document.getElementById('lightboxImg').src = '';
         };
 
-        // --- STREAMING_CHUNK: Table Rendering ---
         window.renderTable = function() {
             const thead = document.getElementById('tableHeaderRow');
             const tbody = document.getElementById('tableBody');
             
-            // Render Headers - Top sticky + Resizers
+            // Build Headers
             let hHTML = `
-                <th class="sticky-head-col-1 px-4 py-3 text-left font-bold text-gray-700 bg-gray-100 border-b-2 border-gray-300 border-r border-gray-200">
-                    Image
-                    <div class="resizer" onmousedown="window.initResize(event, this.parentElement, '1')"></div>
+                <th class="relative px-4 py-3 text-left font-bold text-gray-600 bg-gray-50 border-b-2 border-r border-gray-200" style="width: 80px; min-width: 80px;">
+                    Image <div class="resizer" onmousedown="window.initResize(event, this.parentElement)" ontouchstart="window.initResize(event, this.parentElement)"></div>
                 </th>
-                <th class="sticky-head-col-2 px-4 py-3 text-left font-bold text-gray-700 bg-gray-100 border-b-2 border-gray-300 border-r border-gray-200">
-                    Product Detail
-                    <div class="resizer" onmousedown="window.initResize(event, this.parentElement, '2')"></div>
+                <th class="relative px-4 py-3 text-left font-bold text-gray-600 bg-gray-50 border-b-2 border-r border-gray-200" style="width: 250px; min-width: 250px;">
+                    Product Detail <div class="resizer" onmousedown="window.initResize(event, this.parentElement)" ontouchstart="window.initResize(event, this.parentElement)"></div>
                 </th>
-                <th class="sticky-head-col-3 sticky-head-shadow px-4 py-3 text-left font-bold text-gray-700 bg-gray-100 border-b-2 border-gray-300 border-r-2 border-gray-300">
-                    Crtn Size
-                    <div class="resizer" onmousedown="window.initResize(event, this.parentElement, '3')"></div>
+                <th class="relative px-4 py-3 text-left font-bold text-gray-600 bg-gray-50 border-b-2 border-r border-gray-200" style="width: 120px; min-width: 120px;">
+                    Crtn Size <div class="resizer" onmousedown="window.initResize(event, this.parentElement)" ontouchstart="window.initResize(event, this.parentElement)"></div>
                 </th>
             `;
             
             window.suppliers.forEach(sup => {
                 const display = sup.nickName || sup.companyName;
-                const width = window.colWidths[sup.id] || 150; // Default width 150px
-                
                 hHTML += `
-                    <th class="sticky-head-other px-4 py-2 text-left border-r border-gray-200 bg-blue-50/50 border-b-2 border-brandBlue/30"
-                        style="width:${width}px; min-width:${width}px; max-width:${width}px;">
-                        <div class="text-sm font-bold text-brandBlue truncate pr-2" title="${sup.companyName}">${window.escapeHtml(display)}</div>
+                    <th class="relative px-4 py-2 text-left border-r border-gray-200 bg-blue-50 border-b-2 border-brandBlue/30" style="width: 140px; min-width: 140px;">
+                        <div class="text-sm font-bold text-brandBlue truncate" title="${sup.companyName}">${window.escapeHtml(display)}</div>
                         <div class="text-[10px] font-bold text-gray-500 uppercase">Rate (₹)</div>
-                        <div class="resizer" onmousedown="window.initResize(event, this.parentElement, '${sup.id}')"></div>
+                        <div class="resizer" onmousedown="window.initResize(event, this.parentElement)" ontouchstart="window.initResize(event, this.parentElement)"></div>
                     </th>`;
             });
-            hHTML += `<th class="sticky-head-other px-4 py-3 text-center font-bold text-gray-700 w-24 bg-gray-100 border-b-2 border-gray-300 border-l border-gray-200">Action</th>`;
+            hHTML += `<th class="px-4 py-3 text-center font-bold text-gray-600 bg-gray-50 border-b-2 border-gray-200" style="width: 80px;">Action</th>`;
             thead.innerHTML = hHTML;
 
-            // Render Body
+            // Build Body
             if (window.filteredProducts.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${4 + window.suppliers.length}" class="py-20 text-center text-gray-400 font-medium">No products match your search.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${4 + window.suppliers.length}" class="py-20 text-center text-gray-400 font-medium bg-white">No products match your search.</td></tr>`;
+                requestAnimationFrame(window.updateStickyPositions);
                 return;
             }
 
             let bHTML = '';
             window.filteredProducts.forEach(prod => {
                 const img = (prod.images && prod.images.length > 0) ? prod.images[0] : 'https://placehold.co/100x100/f8fafc/94a3b8?text=No+Img';
-                const hasImgClass = (prod.images && prod.images.length > 0) ? "cursor-zoom-in hover-expand" : "";
                 
                 bHTML += `
                     <tr class="hover:bg-orange-50/30 group border-b border-gray-100 transition-colors">
-                        <td class="sticky-col-1 px-4 py-3 bg-white group-hover:bg-orange-50 transition-colors border-r border-gray-100 align-top">
-                            <img src="${img}" onclick="window.openLightbox('${img}')" class="h-12 w-12 rounded object-cover border border-gray-200 bg-white shadow-sm ${hasImgClass}">
+                        <td class="px-4 py-3 border-r border-gray-100 bg-white">
+                            <img src="${img}" class="h-12 w-12 rounded object-cover border border-gray-200 cursor-pointer bg-white shadow-sm hover:ring-2 ring-brandBlue" onclick="window.openLightbox('${img}')">
                         </td>
-                        <td class="sticky-col-2 px-4 py-3 bg-white group-hover:bg-orange-50 transition-colors border-r border-gray-100 align-top">
-                            <div class="font-bold text-brandBlue cursor-pointer hover:text-brandOrange transition-colors text-[14px] leading-tight mb-1" onclick="window.editProduct('${prod.id}')">${window.escapeHtml(prod.name)}</div>
-                            <div class="text-[10px] bg-gray-100 text-gray-500 rounded px-1.5 py-0.5 inline-block font-medium">${prod.images?.length || 0}/5 imgs</div>
+                        <td class="px-4 py-3 border-r border-gray-100 bg-white">
+                            <div class="font-bold text-brandBlue cursor-pointer hover:text-brandOrange transition-colors text-[15px] truncate" onclick="window.editProduct('${prod.id}')">${window.escapeHtml(prod.name)}</div>
+                            <div class="text-[11px] text-gray-500 font-medium mt-0.5">${prod.images?.length || 0}/5 images</div>
                         </td>
-                        <td class="sticky-col-3 sticky-shadow px-4 py-3 font-semibold text-gray-800 bg-white group-hover:bg-orange-50 border-r-2 border-gray-200 transition-colors cursor-pointer hover:bg-orange-100/50 align-top"
-                            onclick="window.startInlineEditCrtn(event, '${prod.id}', '${window.escapeHtml(prod.crtnSize)}')">
-                            <div id="crtn-cell-${prod.id}" class="min-h-[36px] flex items-center text-[13px] leading-snug break-words pr-1">
-                                ${window.escapeHtml(prod.crtnSize)}
-                            </div>
+                        <td class="px-4 py-3 border-r border-gray-100 bg-white group/crtn cursor-pointer hover:bg-blue-50/50" onclick="window.startCrtnEdit(event, '${prod.id}', '${window.escapeHtml(prod.crtnSize)}')">
+                            <div class="font-semibold text-gray-700 min-h-[24px] flex items-center" id="crtn-${prod.id}">${window.escapeHtml(prod.crtnSize) || '<span class="text-gray-300 text-xs italic">Set size</span>'}</div>
                         </td>
                 `;
 
@@ -555,32 +524,32 @@
                     const rData = prod.supplierRates ? prod.supplierRates[sup.id] : null;
                     const rVal = rData && rData.rate ? rData.rate : '';
                     const rDate = rData && rData.date ? rData.date : '';
-                    const width = window.colWidths[sup.id] || 150;
                     
                     bHTML += `
-                        <td class="px-4 py-2 border-r border-gray-100 relative group/cell cursor-pointer hover:bg-blue-50/50 align-top" 
-                            style="width:${width}px; min-width:${width}px; max-width:${width}px;"
+                        <td class="px-4 py-2 border-r border-gray-100 relative group/cell cursor-pointer hover:bg-blue-50/50" 
                             onclick="window.startInlineEdit(event, '${prod.id}', '${sup.id}', '${rVal}')">
-                            <div class="flex flex-col min-h-[44px] justify-center" id="cell-${prod.id}-${sup.id}">
+                            <div class="flex flex-col min-h-[36px] justify-center" id="cell-${prod.id}-${sup.id}">
                                 ${rVal ? `<div class="font-bold text-gray-900 text-[15px]">₹ ${parseFloat(rVal).toLocaleString('en-IN')}</div>
-                                          <div class="text-[10px] text-brandOrange font-semibold uppercase mt-0.5">${rDate}</div>` 
+                                          <div class="text-[9px] text-brandOrange font-semibold uppercase mt-0.5">${rDate}</div>` 
                                        : `<span class="text-gray-300 text-xs italic font-medium">Set price</span>`}
                             </div>
                         </td>`;
                 });
 
                 bHTML += `
-                        <td class="px-4 py-3 text-center bg-white group-hover:bg-orange-50 transition-colors border-l border-gray-100 align-middle">
-                            <button onclick="window.deleteProduct('${prod.id}')" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                        <td class="px-4 py-3 text-center bg-white">
+                            <button onclick="window.deleteProduct('${prod.id}')" class="text-gray-400 hover:text-red-500 transition-colors">
                                 <i class="ph-fill ph-trash text-xl"></i>
                             </button>
                         </td>
                     </tr>`;
             });
             tbody.innerHTML = bHTML;
+            
+            // Recalculate sticky positions after render
+            requestAnimationFrame(window.updateStickyPositions);
         };
 
-        // --- Search & Inline Editing ---
         window.handleSearch = function() {
             const val = document.getElementById('searchInput').value.toLowerCase();
             const terms = val.split(' ').filter(t => t.trim() !== '');
@@ -592,45 +561,45 @@
             window.renderTable();
         };
 
-        // Inline Edit Crtn Size
-        window.startInlineEditCrtn = function(e, prodId, currentVal) {
-            const contentDiv = document.getElementById(`crtn-cell-${prodId}`);
-            if(contentDiv.querySelector('input')) return;
+        // Inline Edit Carton Size
+        window.startCrtnEdit = function(e, prodId, currentVal) {
+            const container = document.getElementById(`crtn-${prodId}`);
+            if(container.querySelector('input')) return;
             
-            contentDiv.innerHTML = `
+            container.innerHTML = `
                 <input type="text" value="${currentVal}" 
-                       class="w-full px-1.5 py-1 text-sm border-2 border-brandOrange rounded shadow-sm outline-none font-bold text-gray-900 bg-white z-10 relative"
-                       onblur="window.saveInlineEditCrtn(this, '${prodId}')"
+                       class="w-full px-1 py-0.5 text-sm border-2 border-brandBlue rounded outline-none font-bold text-gray-900 bg-white"
+                       onblur="window.saveCrtnEdit(this, '${prodId}')"
                        onkeydown="if(event.key==='Enter') this.blur(); if(event.key==='Escape') window.renderTable();">
             `;
-            const input = contentDiv.querySelector('input');
+            const input = container.querySelector('input');
             input.focus();
             input.select();
+            e.stopPropagation();
         };
 
-        window.saveInlineEditCrtn = function(inputEl, prodId) {
+        window.saveCrtnEdit = function(inputEl, prodId) {
             const val = inputEl.value.trim();
             const pIdx = window.products.findIndex(p => p.id === prodId);
-            
-            if (pIdx > -1 && val) {
+            if (pIdx > -1) {
                 window.products[pIdx].crtnSize = val;
                 const fIdx = window.filteredProducts.findIndex(p => p.id === prodId);
-                if(fIdx > -1) window.filteredProducts[fIdx] = window.products[pIdx];
+                if(fIdx > -1) window.filteredProducts[fIdx].crtnSize = val;
                 window.saveData();
             }
             window.renderTable();
         };
 
-        // Inline Edit Rates
+        // Inline Edit Price
         window.startInlineEdit = function(e, prodId, supId, currentVal) {
             const contentDiv = document.getElementById(`cell-${prodId}-${supId}`);
             if(contentDiv.querySelector('input')) return;
             
             contentDiv.innerHTML = `
-                <div class="flex items-center gap-1 z-10 relative">
+                <div class="flex items-center gap-1">
                     <span class="text-brandBlue font-bold">₹</span>
                     <input type="number" step="0.01" value="${currentVal}" 
-                           class="w-[80px] px-1 py-0.5 text-[15px] border-2 border-brandBlue shadow-sm rounded outline-none font-bold text-gray-900 bg-white"
+                           class="w-[80px] px-1 py-0.5 text-sm border-2 border-brandBlue rounded outline-none font-bold text-gray-900 bg-white"
                            onblur="window.saveInlineEdit(this, '${prodId}', '${supId}')"
                            onkeydown="if(event.key==='Enter') this.blur(); if(event.key==='Escape') window.renderTable();">
                 </div>
@@ -638,6 +607,7 @@
             const input = contentDiv.querySelector('input');
             input.focus();
             input.select();
+            e.stopPropagation();
         };
 
         window.saveInlineEdit = function(inputEl, prodId, supId) {
@@ -657,12 +627,59 @@
                 
                 const fIdx = window.filteredProducts.findIndex(p => p.id === prodId);
                 if(fIdx > -1) window.filteredProducts[fIdx] = window.products[pIdx];
+                
                 window.saveData();
             }
             window.renderTable();
         };
 
-        // --- Product Modal Logic ---
+        // Supplier Reorder Logic
+        window.openReorderModal = function() {
+            window.renderReorderList();
+            document.getElementById('reorderModal').classList.remove('hidden');
+        };
+
+        window.closeReorderModal = function() {
+            document.getElementById('reorderModal').classList.add('hidden');
+        };
+
+        window.renderReorderList = function() {
+            const c = document.getElementById('reorderListContainer');
+            if (window.suppliers.length === 0) {
+                c.innerHTML = '<div class="text-sm text-gray-400 italic text-center py-4">No suppliers to reorder.</div>';
+                return;
+            }
+            let html = '';
+            window.suppliers.forEach((s, index) => {
+                html += `
+                    <div class="flex justify-between items-center bg-white border border-gray-200 p-3 rounded-lg shadow-sm">
+                        <span class="font-bold text-gray-800 text-sm">${window.escapeHtml(s.companyName)} <span class="text-xs font-normal text-gray-500">(${s.nickName || s.name})</span></span>
+                        <div class="flex gap-1">
+                            <button onclick="window.moveSupplier(${index}, -1)" ${index === 0 ? 'disabled' : ''} class="p-1.5 ${index === 0 ? 'text-gray-300' : 'text-brandBlue hover:bg-blue-50'} rounded"><i class="ph-fill ph-caret-up text-lg"></i></button>
+                            <button onclick="window.moveSupplier(${index}, 1)" ${index === window.suppliers.length - 1 ? 'disabled' : ''} class="p-1.5 ${index === window.suppliers.length - 1 ? 'text-gray-300' : 'text-brandBlue hover:bg-blue-50'} rounded"><i class="ph-fill ph-caret-down text-lg"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+            c.innerHTML = html;
+        };
+
+        window.moveSupplier = function(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= window.suppliers.length) return;
+            const temp = window.suppliers[index];
+            window.suppliers[index] = window.suppliers[newIndex];
+            window.suppliers[newIndex] = temp;
+            window.renderReorderList();
+        };
+
+        window.saveReorder = function() {
+            window.saveData();
+            window.renderTable();
+            window.closeReorderModal();
+        };
+
+        // Product Modal Logic
         window.openProductModal = function() {
             document.getElementById('editingProductId').value = '';
             document.getElementById('prodName').value = '';
@@ -690,7 +707,6 @@
             for (let i = 1; i <= 5; i++) {
                 const imgInput = document.getElementById(`prodImg${i}`);
                 const hiddenInput = document.getElementById(`storedImg${i}`);
-                
                 if (imgInput && imgInput.dataset.base64) {
                     images.push(imgInput.dataset.base64);
                 } else if (hiddenInput && hiddenInput.value) {
@@ -715,7 +731,7 @@
                 });
             }
 
-            window.handleSearch(); 
+            window.handleSearch();
             window.saveData();
             window.closeProductModal();
         };
@@ -723,12 +739,10 @@
         window.editProduct = function(id) {
             const p = window.products.find(x => x.id === id);
             if(!p) return;
-            
             document.getElementById('editingProductId').value = p.id;
             document.getElementById('prodName').value = p.name;
             document.getElementById('prodSize').value = p.crtnSize;
             document.getElementById('prodModalTitle').innerHTML = '<i class="ph-fill ph-pencil-simple text-brandOrange text-xl"></i> Edit Product';
-            
             window.buildImageInputs(p.images || []);
             document.getElementById('productModal').classList.remove('hidden');
         };
@@ -748,14 +762,13 @@
                     const img = new Image();
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
-                        const MAX = 600; 
+                        const MAX = 600;
                         let w = img.width, h = img.height;
                         if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } } 
                         else { if (h > MAX) { w *= MAX / h; h = MAX; } }
                         
                         canvas.width = w; canvas.height = h;
                         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        
                         const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
                         
                         const pDiv = document.getElementById(previewId);
@@ -798,7 +811,7 @@
             }
         };
 
-        // --- Supplier Management Logic ---
+        // Supplier Management Logic
         window.openSupplierManager = function() {
             window.resetSupplierForm();
             window.renderSupplierList();
@@ -848,9 +861,6 @@
             window.saveData();
             window.resetSupplierForm();
             window.renderSupplierList();
-            if(document.getElementById('reorderModal').classList.contains('hidden') === false) {
-                 window.renderReorderList();
-            }
             window.renderTable();
         };
 
@@ -874,32 +884,27 @@
                 });
                 window.saveData();
                 window.renderSupplierList();
-                if(document.getElementById('reorderModal').classList.contains('hidden') === false) {
-                     window.renderReorderList();
-                }
                 window.renderTable();
             });
         };
 
         window.renderSupplierList = function() {
             const c = document.getElementById('supplierListContainer');
-            if(!c) return;
             if (window.suppliers.length === 0) {
                 c.innerHTML = '<div class="text-sm text-gray-400 italic text-center py-4">No suppliers added yet.</div>';
                 return;
             }
-            
             let html = '';
-            window.suppliers.forEach((s) => {
+            window.suppliers.forEach(s => {
                 html += `
-                    <div class="border border-gray-200 rounded-lg p-3 hover:border-brandOrange hover:bg-orange-50/20 transition-colors flex justify-between items-center group bg-white shadow-sm">
-                        <div class="overflow-hidden flex-grow">
+                    <div class="border border-gray-200 rounded-lg p-3 hover:border-brandOrange hover:bg-orange-50/20 transition-colors flex justify-between items-center group">
+                        <div class="overflow-hidden">
                             <div class="font-bold text-gray-800 text-sm truncate">${window.escapeHtml(s.companyName)}</div>
                             <div class="text-xs text-gray-500 font-medium">${window.escapeHtml(s.name)} ${s.nickName ? `• <span class="text-brandBlue">${window.escapeHtml(s.nickName)}</span>` : ''}</div>
                         </div>
-                        <div class="flex gap-1">
-                            <button onclick="window.editSupplier('${s.id}')" class="p-1.5 text-blue-500 hover:bg-blue-100 rounded" title="Edit"><i class="ph-fill ph-pencil-simple text-lg"></i></button>
-                            <button onclick="window.deleteSupplier('${s.id}')" class="p-1.5 text-red-500 hover:bg-red-100 rounded" title="Delete"><i class="ph-fill ph-trash text-lg"></i></button>
+                        <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="window.editSupplier('${s.id}')" class="p-1.5 text-blue-500 hover:bg-blue-100 rounded"><i class="ph-fill ph-pencil-simple text-lg"></i></button>
+                            <button onclick="window.deleteSupplier('${s.id}')" class="p-1.5 text-red-500 hover:bg-red-100 rounded"><i class="ph-fill ph-trash text-lg"></i></button>
                         </div>
                     </div>
                 `;
@@ -907,75 +912,6 @@
             c.innerHTML = html;
         };
 
-        // --- Reorder Columns Logic ---
-        window.openReorderModal = function() {
-            window.renderReorderList();
-            document.getElementById('reorderModal').classList.remove('hidden');
-        };
-
-        window.closeReorderModal = function() {
-            document.getElementById('reorderModal').classList.add('hidden');
-        };
-
-        window.moveSupplierList = function(id, dir) {
-            const idx = window.suppliers.findIndex(s => s.id === id);
-            if (idx < 0) return;
-            
-            if (dir === -1 && idx > 0) {
-                const temp = window.suppliers[idx];
-                window.suppliers[idx] = window.suppliers[idx - 1];
-                window.suppliers[idx - 1] = temp;
-            } else if (dir === 1 && idx < window.suppliers.length - 1) {
-                const temp = window.suppliers[idx];
-                window.suppliers[idx] = window.suppliers[idx + 1];
-                window.suppliers[idx + 1] = temp;
-            } else {
-                return; 
-            }
-            
-            window.saveData();
-            window.renderReorderList();
-            window.renderTable();
-        };
-
-        window.renderReorderList = function() {
-            const c = document.getElementById('reorderListContainer');
-            if (window.suppliers.length === 0) {
-                c.innerHTML = '<div class="text-sm text-gray-400 italic text-center py-4">No suppliers available to reorder.</div>';
-                return;
-            }
-            
-            let html = '';
-            window.suppliers.forEach((s, index) => {
-                const isFirst = index === 0;
-                const isLast = index === window.suppliers.length - 1;
-                const display = s.nickName || s.companyName;
-                
-                html += `
-                    <div class="border border-gray-200 rounded-lg p-3 flex justify-between items-center bg-white shadow-sm hover:border-gray-300">
-                        <div class="flex items-center gap-3">
-                            <i class="ph-bold ph-columns text-gray-400 text-lg"></i>
-                            <div>
-                                <div class="font-bold text-gray-800 text-sm">${window.escapeHtml(display)}</div>
-                                <div class="text-[11px] text-gray-500 font-medium">Table Header Name</div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex flex-col gap-1 bg-gray-50 rounded p-1 border border-gray-200">
-                            <button onclick="window.moveSupplierList('${s.id}', -1)" class="p-1 text-gray-500 hover:text-brandBlue hover:bg-blue-50 rounded disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-500 transition-colors" ${isFirst ? 'disabled' : ''} title="Move Left/Up">
-                                <i class="ph-bold ph-caret-up text-sm"></i>
-                            </button>
-                            <button onclick="window.moveSupplierList('${s.id}', 1)" class="p-1 text-gray-500 hover:text-brandBlue hover:bg-blue-50 rounded disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-500 transition-colors" ${isLast ? 'disabled' : ''} title="Move Right/Down">
-                                <i class="ph-bold ph-caret-down text-sm"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-            c.innerHTML = html;
-        };
-
-        // --- Utility ---
         window.escapeHtml = function(s) {
             return (s || '').toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         };
@@ -1006,7 +942,6 @@
             document.body.removeChild(link);
         };
 
-        // Start App
         window.loadData();
     </script>
 </body>
